@@ -1,0 +1,10 @@
+package com.bjdev.base.repositories.user;
+
+import com.bjdev.base.models.user.AuditLog;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
+
+
+
+}

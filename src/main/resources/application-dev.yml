@@ -1,0 +1,69 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # MySQL and Redis connection details are NOT set here on purpose: spring-boot-docker-compose
+  # reads compose.yaml, starts both containers, and auto-wires their connection details
+  # (host, dynamically mapped port, credentials) via Spring Boot's service connections support.
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Dev SMTP points at MailHog (see compose.yaml) — no real email is ever sent locally.
+  # Open http://localhost:8025 to read the emails the app sends.
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+jwt:
+  secret: ${JWT_SECRET:IE340rpZt88g7WYOjQZoz4wAWO2GC3l9Ozy46bBjJDna6xKsnhGlb8BzLiOXcynRkLzesqbWhoLeLB3nN365YS}
+  expiration: 3600000                # 1h  — normal user access token
+  refresh-expiration: 1209600000     # 14d — normal user refresh token
+  admin-expiration: 900000           # 15m — admin access token (short session)
+  admin-refresh-expiration: 7200000  # 2h  — admin refresh token
+
+app:
+  cookie:
+    secure: false
+    same-site: Lax
+  cors:
+    allowed-origin-patterns:
+      - http://localhost:*
+  cloudflare:
+    tunnel-filter:
+      # Disabled in dev — there is no Cloudflare Tunnel in front of localhost.
+      enabled: false
+      header-name: X-Tunnel-Secret
+      secret: ${CLOUDFLARE_TUNNEL_SECRET:dev-tunnel-secret}
+  login:
+    max-attempts-per-email: 5
+    max-attempts-per-ip: 20
+    lock-duration-minutes: 15
+  security:
+    # Off in dev — lets the same account stay logged in from several clients while testing.
+    single-session-enabled: false
+  admin:
+    action-confirmation:
+      # Off in dev — enable to test the "confirm by email" flow against MailHog.
+      enabled: false
+  frontend:
+    base-url: http://localhost:3000
+  mail:
+    from: no-reply@base.local
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
+logging:
+  level:
+    com.bjdev.base: DEBUG

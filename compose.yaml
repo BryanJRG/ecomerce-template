@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: 'mysql:8.4'
+    environment:
+      - 'MYSQL_DATABASE=base_dev'
+      - 'MYSQL_ROOT_PASSWORD=verysecret'
+    ports:
+      - '3306'
+
+  redis:
+    image: 'redis:7-alpine'
+    ports:
+      - '6379'
+
+  # Dev-only fake SMTP server. Web UI at http://localhost:8025 shows every email the app sends.
+  mailhog:
+    image: 'mailhog/mailhog'
+    ports:
+      - '1025:1025'
+      - '8025:8025'

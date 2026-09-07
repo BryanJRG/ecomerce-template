@@ -1,0 +1,85 @@
+# Template for production configuration.
+#
+# This file is NOT auto-loaded (Spring never activates a profile named "example").
+# Copy it to application-prod.yml (gitignored — never commit real secrets) and fill in the
+# values, or skip the copy and just export the referenced environment variables, then run with
+# SPRING_PROFILES_ACTIVE=prod.
+#
+# The Cloudflare Tunnel must be in place before app.cloudflare.tunnel-filter.enabled=true takes
+# effect for real traffic — otherwise every /api/admin/** request will be rejected with 403.
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  admin-expiration: ${JWT_ADMIN_EXPIRATION:900000}
+  admin-refresh-expiration: ${JWT_ADMIN_REFRESH_EXPIRATION:7200000}
+
+app:
+  cookie:
+    secure: true
+    same-site: Strict
+  cors:
+    # Comma-separated env var binds fine to a List<String> (e.g. "https://app.example.com,https://admin.example.com").
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS}
+  cloudflare:
+    tunnel-filter:
+      enabled: true
+      header-name: X-Tunnel-Secret
+      secret: ${CLOUDFLARE_TUNNEL_SECRET}
+  login:
+    max-attempts-per-email: 5
+    max-attempts-per-ip: 20
+    lock-duration-minutes: 15
+  security:
+    # Recommended on in prod: forces re-login on other devices whenever a user logs in again.
+    single-session-enabled: true
+  admin:
+    action-confirmation:
+      # Recommended on in prod as a second, out-of-band factor for admin-invitation creation —
+      # mitigates a stolen/replayed admin JWT even when the Cloudflare Tunnel filter above is
+      # bypassed or not in front of this deployment.
+      enabled: true
+  frontend:
+    base-url: ${FRONTEND_BASE_URL}
+  mail:
+    from: ${MAIL_FROM:no-reply@yourdomain.com}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+
+logging:
+  level:
+    com.bjdev.base: INFO

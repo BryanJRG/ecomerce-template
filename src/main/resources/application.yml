@@ -1,0 +1,8 @@
+# Shared settings across all profiles. Profile-specific config lives in
+# application-dev.yml (active by default) and application-example.yml (a template — copy it
+# to application-prod.yml, which is gitignored, or provide the referenced env vars directly).
+spring:
+  application:
+    name: base
+  profiles:
+    active: dev
