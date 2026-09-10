@@ -35,3 +35,7 @@ build/
 ### Local secrets ###
 application-prod.yml
 .env
+
+### Claude Code (local only) ###
+CLAUDE.md
+.claude/

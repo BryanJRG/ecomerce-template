@@ -23,6 +23,15 @@ spring:
       ddl-auto: validate
     show-sql: false
 
+# Off by default in prod: the full API surface (every path/schema) isn't something to expose
+# publicly. Turn one or both back on (e.g. behind the Cloudflare Tunnel filter, or temporarily)
+# if you want Swagger UI reachable in a given deployment.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
   data:
     redis:
       host: ${REDIS_HOST}
@@ -77,9 +86,21 @@ app:
     base-url: ${FRONTEND_BASE_URL}
   mail:
     from: ${MAIL_FROM:no-reply@yourdomain.com}
+    catalog-admin: ${CATALOG_ADMIN_EMAIL}
+    ops-admin: ${OPS_ADMIN_EMAIL}
   google:
     client-id: ${GOOGLE_CLIENT_ID}
+  cart:
+    abandoned-retention-days: ${CART_ABANDONED_RETENTION_DAYS:30}
+    purge-cron: "0 0 3 1 * *"
+  checkout:
+    reservation-timeout-minutes: ${CHECKOUT_RESERVATION_TIMEOUT_MINUTES:15}
+    reservation-cleanup-interval-ms: 300000
+    reservation-retention-days: ${CHECKOUT_RESERVATION_RETENTION_DAYS:30}
+    reservation-purge-cron: "0 30 3 1 * *"
+  payment:
+    idempotency-ttl-minutes: ${PAYMENT_IDEMPOTENCY_TTL_MINUTES:10}
 
 logging:
   level:
-    com.bjdev.base: INFO
+    com.bjdev.ecomercebase: INFO

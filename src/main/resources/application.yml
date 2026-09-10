@@ -3,6 +3,17 @@
 # to application-prod.yml, which is gitignored, or provide the referenced env vars directly).
 spring:
   application:
-    name: base
+    name: ecomerce-base
   profiles:
     active: dev
+
+# Only health is exposed — the rest of Actuator (env, beans, mappings, etc.) can leak internals and
+# stays off by default. /actuator/health has no sensitive data, so it's public in SecurityConfig.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

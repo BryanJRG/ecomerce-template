@@ -1,8 +1,15 @@
+# Explicit project name — Docker Compose otherwise derives it from the folder name
+# ("ecomerce-template" here), which is how this project could end up sharing containers/networks
+# with the template repo it was cloned from if that folder is ever also literally named
+# "ecomerce-template" (or if COMPOSE_PROJECT_NAME collides). Pinning it here guarantees this
+# project's containers/network are always named ecomerce-base-*, independent of folder name.
+name: ecomerce-base
+
 services:
   mysql:
     image: 'mysql:8.4'
     environment:
-      - 'MYSQL_DATABASE=base_dev'
+      - 'MYSQL_DATABASE=ecomerce_base_dev'
       - 'MYSQL_ROOT_PASSWORD=verysecret'
     ports:
       - '3306'
@@ -12,9 +19,14 @@ services:
     ports:
       - '6379'
 
-  # Dev-only fake SMTP server. Web UI at http://localhost:8025 shows every email the app sends.
+  # Dev-only fake SMTP server. Web UI at http://localhost:8026 shows every email the app sends.
+  # Host ports are intentionally NOT the MailHog defaults (1025/8025): those are the most likely
+  # ports another local project (e.g. the template this was cloned from) also binds, which would
+  # fail to start if both run at once. mysql/redis above don't need this — their host ports are
+  # left unbound, so Docker assigns free ones and Spring Boot's service-connection support
+  # auto-discovers them.
   mailhog:
     image: 'mailhog/mailhog'
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '1026:1025'
+      - '8026:8025'

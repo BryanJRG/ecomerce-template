@@ -6,19 +6,24 @@ spring:
   # MySQL and Redis connection details are NOT set here on purpose: spring-boot-docker-compose
   # reads compose.yaml, starts both containers, and auto-wires their connection details
   # (host, dynamically mapped port, credentials) via Spring Boot's service connections support.
+  #
+  # Schema is owned by Flyway (src/main/resources/db/migration), not Hibernate — ddl-auto: validate
+  # only checks the mapped entities against what Flyway actually created, it never changes the
+  # schema itself. Adding/changing a column means adding a new Vn__description.sql migration, never
+  # editing V1__init.sql (already-applied migrations are checksummed and must never change).
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
   # Dev SMTP points at MailHog (see compose.yaml) — no real email is ever sent locally.
-  # Open http://localhost:8025 to read the emails the app sends.
+  # Open http://localhost:8026 to read the emails the app sends.
   mail:
     host: localhost
-    port: 1025
+    port: 1026
     properties:
       mail:
         smtp:
@@ -60,10 +65,25 @@ app:
   frontend:
     base-url: http://localhost:3000
   mail:
-    from: no-reply@base.local
+    from: no-reply@ecomerce-base.local
+    catalog-admin: catalog-admin@ecomerce-base.local
+    ops-admin: ops-admin@ecomerce-base.local
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
+  cart:
+    # Purely a courtesy for the abandoned-cart purge job: no accounting implication, unlike Orders.
+    abandoned-retention-days: 30
+    purge-cron: "0 0 3 1 * *" # monthly, 03:00 on the 1st
+  checkout:
+    # Orphaned stock-reservation release job (see StockReservationCleanupJob) — short in dev to
+    # make the safety net easy to observe manually.
+    reservation-timeout-minutes: 5
+    reservation-cleanup-interval-ms: 60000
+    reservation-retention-days: 30
+    reservation-purge-cron: "0 30 3 1 * *" # monthly, 03:30 on the 1st
+  payment:
+    idempotency-ttl-minutes: 10
 
 logging:
   level:
-    com.bjdev.base: DEBUG
+    com.bjdev.ecomercebase: DEBUG
